@@ -1,56 +1,60 @@
-function createNewTabInOppositeMode(url, incognito) {
-    chrome.windows.getAll({
-        windowTypes: ["normal"]
-    }, windows => {
-        for (var i = 0; i < windows.length; i++) {
-            if (windows[i].incognito != incognito) {
-                chrome.tabs.query({
-                    windowId: windows[i].id,
-                    url: url
-                }, function (tabs) {
-                    chrome.windows.update(
-                        windows[i].id,
-                        { focused: true },
-                        function () {
-                            if (tabs.length > 0)
-                                chrome.tabs.update(tabs[tabs.length-1].id, { active: true })
-                            else if (tabs.length == 0)
-                                chrome.tabs.create({
-                                    windowId: windows[i].id,
-                                    url: url,
-                                    active: true
-                                });
-                        }
-                    )
-                })
-                return;
+let tb
+function SetPxy() {
+    let config = {
+        mode: 'fixed_servers',
+        rules: {
+            singleProxy: {
+                scheme: 'socks5',
+                host: '127.0.0.1',
+                port: 10808
+            },
+            bypassList: ["foobar.com"]
+        }
+    };
+    chrome.proxy.settings.set(
+        { value: config, scope: 'regular' },
+        setIconF
+    );
+}
+function setIconF() {
+    chrome.proxy.settings.get(
+        { 'incognito': false },
+        function (config) {
+            if (tb && tb.pendingUrl) {
+                // chrome.tabs.create({ 'url': tb.pendingUrl })
+                setTimeout(function () {
+                    if (tb && tb.pendingUrl)
+                        chrome.tabs.reload()
+                }, 200)
+            }
+            if (config.levelOfControl === 'controlled_by_this_extension') {
+                if (config.value.mode === 'fixed_servers')
+                    chrome.browserAction.setIcon({ path: 'purple.png' })
+                else if (config.value.mode === 'direct')
+                    chrome.browserAction.setIcon({ path: 'gray.png' })
             }
         }
-        chrome.windows.create({
-            state:'maximized',
-            incognito: !incognito,
-            url: url
-        });
-    })
+    )
 }
-
+chrome.runtime.onInstalled.addListener(function () {
+    SetPxy()
+})
 chrome.browserAction.onClicked.addListener((tab) => {
-    createNewTabInOppositeMode(tab.url, tab.incognito);
-    // chrome.tabs.remove(tab.id);
-});
+    console.log(tab)
+    tb = tab
+    chrome.proxy.settings.get(
+        { 'incognito': false },
+        function (config) {
+            if (config.levelOfControl === 'controlled_by_this_extension') {
+                if (config.value.mode === 'fixed_servers')
+                    chrome.proxy.settings.set(
+                        { value: { mode: 'direct' }, scope: 'regular' },
+                        setIconF
+                    )
+                else if (config.value.mode === 'direct')
+                    SetPxy()
+            }
+        }
+    )
+})
 
-chrome.contextMenus.create({
-    id: "incognitoornot",
-    title: "Open Link in Incognito/Normal Window",
-    contexts: ["page", "link"],
-    onclick: (info, tab) => {
-        createNewTabInOppositeMode(info.linkUrl || info.pageUrl, tab.incognito);
-    }
-});
-chrome.contextMenus.create({
-    title: "Search text in Incognito/Normal Window",
-    contexts: ["selection"],
-    onclick: (info, tab) => {
-        createNewTabInOppositeMode("https://www.google.com/search?q=" + encodeURIComponent(info.selectionText), tab.incognito);
-    }
-});

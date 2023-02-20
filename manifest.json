@@ -1,13 +1,12 @@
 {
     "manifest_version": 2,
-    "name": "incognitoSwitch",
-    "version": "2022.2.9",
+    "name": "Pxy",
+    "version": "2023.2.21",
     "browser_action": {
-        "default_icon": {
-            "128": "icon128.png"
-        }
+        
     },
     "permissions": [
+        "proxy",
         "activeTab",
         "contextMenus"
     ],
