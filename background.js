@@ -21,12 +21,12 @@ function setIconF() {
         function (config) {
             if (config.levelOfControl === 'controlled_by_this_extension') {
                 if (config.value.mode === 'fixed_servers')
-                    chrome.browserAction.setIcon({ path: 'purple.png' }, function () {
+                    chrome.browserAction.setIcon({ path: 'fixed.png' }, function () {
                         if (tb && tb.pendingUrl)
                             chrome.tabs.reload()
                     })
                 else if (config.value.mode === 'direct')
-                    chrome.browserAction.setIcon({ path: 'gray.png' }, function () {
+                    chrome.browserAction.setIcon({ path: 'direct.png' }, function () {
                         if (tb && tb.pendingUrl)
                             chrome.tabs.reload()
                     })
