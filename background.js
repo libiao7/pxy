@@ -38,7 +38,6 @@ chrome.runtime.onInstalled.addListener(function () {
     SetPxy()
 })
 chrome.browserAction.onClicked.addListener((tab) => {
-    console.log(tab)
     tb = tab
     chrome.proxy.settings.get(
         { 'incognito': false },
