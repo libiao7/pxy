@@ -7,8 +7,7 @@ function SetPxy() {
                 scheme: 'socks5',
                 host: '127.0.0.1',
                 port: 10808
-            },
-            bypassList: ["foobar.com"]
+            }
         }
     };
     chrome.proxy.settings.set(
@@ -20,18 +19,17 @@ function setIconF() {
     chrome.proxy.settings.get(
         { 'incognito': false },
         function (config) {
-            if (tb && tb.pendingUrl) {
-                // chrome.tabs.create({ 'url': tb.pendingUrl })
-                setTimeout(function () {
-                    if (tb && tb.pendingUrl)
-                        chrome.tabs.reload()
-                }, 200)
-            }
             if (config.levelOfControl === 'controlled_by_this_extension') {
                 if (config.value.mode === 'fixed_servers')
-                    chrome.browserAction.setIcon({ path: 'purple.png' })
+                    chrome.browserAction.setIcon({ path: 'purple.png' }, function () {
+                        if (tb && tb.pendingUrl)
+                            chrome.tabs.reload()
+                    })
                 else if (config.value.mode === 'direct')
-                    chrome.browserAction.setIcon({ path: 'gray.png' })
+                    chrome.browserAction.setIcon({ path: 'gray.png' }, function () {
+                        if (tb && tb.pendingUrl)
+                            chrome.tabs.reload()
+                    })
             }
         }
     )
